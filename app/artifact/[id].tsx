@@ -5,7 +5,7 @@ import { globalStyles } from '@/constants/theme';
 import { theme } from '@/constants/theme';
 import { useArtifactStore } from '@/stores/artifactStore';
 import { Image } from 'expo-image';
-import { AudioPlayer } from '@/components/AudioPlayer';
+
 import { BonkSlider } from '@/components/BonkSlider';
 import { MapPin, Calendar, User, ArrowLeft } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -133,12 +133,23 @@ export default function ArtifactDetailScreen() {
             </Text>
           </View>
           
-          {/* Audio player */}
-          {(artifact.type === 'audio' || artifact.type === 'combo') && (
-            <AudioPlayer 
-              title={`${artifact.title} - Audio Recording`}
-              audioUrl={artifact.audioUrl}
-            />
+          {/* Link display */}
+          {artifact.type === 'link' && artifact.linkUrl && (
+            <View style={styles.detailsContainer}>
+              <Text style={styles.linkLabel}>LINK</Text>
+              <TouchableOpacity 
+                style={styles.linkButton}
+                onPress={() => {
+                  // In a real app, you would open the URL
+                  console.log('Opening link:', artifact.linkUrl);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.linkText} numberOfLines={1}>
+                  {artifact.linkUrl}
+                </Text>
+              </TouchableOpacity>
+            </View>
           )}
           
           {/* Preservation */}
@@ -365,6 +376,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: theme.spacing.sm,
     fontSize: 14,
+    fontFamily: 'monospace',
+  },
+  linkLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.sm,
+    fontFamily: 'monospace',
+  },
+  linkButton: {
+    backgroundColor: theme.colors.accent,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: theme.colors.background,
+    fontSize: 14,
+    fontWeight: '600',
     fontFamily: 'monospace',
   },
 });

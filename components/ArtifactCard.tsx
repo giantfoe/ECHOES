@@ -1,17 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from 'expo-router';
 import { theme } from '@/constants/theme';
-import { MapPin, Clock } from 'lucide-react-native';
+import { MapPin, Clock, Heart, Bookmark } from 'lucide-react-native';
 import { Artifact } from '@/mocks/artifacts';
+import * as Haptics from 'expo-haptics';
 
 interface ArtifactCardProps {
   artifact: Artifact;
+  onDonate?: (artifactId: string) => void;
+  onPreserve?: (artifactId: string) => void;
+  isDonated?: boolean;
 }
 
-export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact }) => {
+export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact, onDonate, onPreserve, isDonated = false }) => {
+
+  const [isPreserved, setIsPreserved] = useState(false);
+
   const handlePress = () => {
     router.push(`/artifact/${artifact.id}`);
+  };
+
+  const handleDonate = () => {
+    onDonate?.(artifact.id);
+  };
+
+  const handlePreserve = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsPreserved(!isPreserved);
+    onPreserve?.(artifact.id);
   };
 
   return (
@@ -44,6 +61,35 @@ export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact }) => {
             <Text style={styles.brightnessText}>{artifact.brightness}% BRIGHT</Text>
             <Text style={styles.preservationText}>{artifact.bonkPreservation} BONK</Text>
           </View>
+        </View>
+        
+        {/* Action buttons */}
+        <View style={styles.actionContainer}>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={handleDonate}
+            activeOpacity={0.7}
+          >
+            <Heart 
+              size={20} 
+              color={isDonated ? '#FF3B30' : theme.colors.secondaryText}
+              fill={isDonated ? '#FF3B30' : 'transparent'}
+            />
+            <Text style={[styles.actionText, isDonated && styles.actionTextActive]}>Donate</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={handlePreserve}
+            activeOpacity={0.7}
+          >
+            <Bookmark 
+              size={20} 
+              color={isPreserved ? theme.colors.accent : theme.colors.secondaryText}
+              fill={isPreserved ? theme.colors.accent : 'transparent'}
+            />
+            <Text style={[styles.actionText, isPreserved && styles.actionTextActive]}>Preserve</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -136,6 +182,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.accent,
     fontFamily: 'monospace',
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: 'transparent',
+  },
+  actionText: {
+    fontSize: 14,
+    color: theme.colors.secondaryText,
+    marginLeft: theme.spacing.xs,
+    fontFamily: 'monospace',
+    fontWeight: '500',
+  },
+  actionTextActive: {
+    color: theme.colors.accent,
+    fontWeight: '600',
   },
 });
 

@@ -5,14 +5,10 @@ import { theme } from '@/constants/theme';
 import { useArtifactStore } from '@/stores/artifactStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRouter } from 'expo-router';
-import { Camera, Mic, Radio, Image as ImageIcon, MapPin } from 'lucide-react-native';
+import { Camera, Link, Image as ImageIcon, MapPin } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
-import { 
-  useAudioRecorder, 
-  useAudioRecorderState, 
-  AudioModule
-} from 'expo-audio';
+// Audio functionality removed for simplicity
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { Image } from 'expo-image';
@@ -22,29 +18,31 @@ export default function CreateScreen() {
   const { createArtifact } = useArtifactStore();
   const { incrementArtifactsCreated } = useUserStore();
   
+  // Add error boundary for debugging
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return (
+      <View style={[globalStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: theme.colors.text, textAlign: 'center' }}>
+          Something went wrong with the Create screen.{"\n"}
+          Please restart the app.
+        </Text>
+        <TouchableOpacity 
+          style={{ marginTop: 20, padding: 10, backgroundColor: theme.colors.accent, borderRadius: 5 }}
+          onPress={() => setHasError(false)}
+        >
+          <Text style={{ color: theme.colors.background }}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState<'photo' | 'audio' | 'combo'>('photo');
+  const [type, setType] = useState<'photo' | 'link'>('photo');
   const [image, setImage] = useState<string | null>(null);
-  const audioRecorder = useAudioRecorder({
-    android: {
-      extension: '.m4a',
-      outputFormat: 'mpeg4',
-      audioEncoder: 'aac',
-    },
-    ios: {
-      extension: '.m4a',
-      outputFormat: 'mpeg4aac',
-      audioQuality: 96,
-    },
-    web: {
-      mimeType: 'audio/webm',
-      bitsPerSecond: 128000,
-    },
-  });
-  const audioRecorderState = useAudioRecorderState(audioRecorder, 100);
-  const [audioUri, setAudioUri] = useState<string | null>(null);
-  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [linkUrl, setLinkUrl] = useState('');
   const [location, setLocation] = useState({
     latitude: 34.0522,
     longitude: -118.2437,
@@ -53,23 +51,33 @@ export default function CreateScreen() {
   const [permissionsGranted, setPermissionsGranted] = useState(false);
 
   useEffect(() => {
-    requestPermissions();
-    getCurrentLocation();
+    const initializeScreen = async () => {
+      try {
+        await requestPermissions();
+        await getCurrentLocation();
+      } catch (error) {
+        console.error('Error initializing create screen:', error);
+        setHasError(true);
+      }
+    };
+    
+    initializeScreen();
   }, []);
+
+  // No cleanup needed for simplified version
 
   const requestPermissions = async () => {
     try {
-      const audioPermission = await AudioModule.requestRecordingPermissionsAsync();
       const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
       const locationPermission = await Location.requestForegroundPermissionsAsync();
       
       setPermissionsGranted(
-        audioPermission.status === 'granted' && 
         mediaLibraryPermission.status === 'granted' &&
         locationPermission.status === 'granted'
       );
     } catch (error) {
       console.error('Error requesting permissions:', error);
+      Alert.alert('Permission Error', 'Failed to request permissions. Please check your device settings.');
     }
   };
 
@@ -147,75 +155,7 @@ export default function CreateScreen() {
     }
   };
 
-  const startRecording = async () => {
-    try {
-      if (!permissionsGranted) {
-        Alert.alert('Permission Required', 'Audio recording permission is required.');
-        return;
-      }
-
-      await audioRecorder.record();
-      setRecordingDuration(0);
-      
-      if (Platform.OS !== 'web') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      }
-      
-      // Start duration timer
-      const timer = setInterval(() => {
-        setRecordingDuration(prev => prev + 1);
-      }, 1000);
-      
-      // Store timer reference for cleanup
-      (audioRecorder as any).timer = timer;
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      Alert.alert('Error', 'Failed to start recording');
-    }
-  };
-
-  const stopRecording = async () => {
-    try {
-      if (!audioRecorderState.isRecording) return;
-      
-      // Clear timer
-      if ((audioRecorder as any).timer) {
-        clearInterval((audioRecorder as any).timer);
-      }
-      
-      await audioRecorder.stop();
-      
-      // Get the recording URI from the recorder after stopping
-      const recordingUri = audioRecorder.uri;
-      
-      if (recordingUri) {
-        setAudioUri(recordingUri);
-        
-        if (Platform.OS !== 'web') {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-        
-        if (permissionsGranted) {
-          try {
-            await MediaLibrary.saveToLibraryAsync(recordingUri);
-          } catch (error) {
-            console.error('Error saving audio to media library:', error);
-          }
-        }
-      } else {
-        setAudioUri(null);
-      }
-    } catch (error) {
-      console.error('Error stopping recording:', error);
-      Alert.alert('Error', 'Failed to stop recording');
-    }
-  };
-
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  // Audio recording functions removed for simplicity
   
   const handleCreateArtifact = () => {
     if (!title || !description) {
@@ -235,7 +175,7 @@ export default function CreateScreen() {
         name: 'You'
       },
       mediaUrl: image || undefined,
-      audioUrl: type !== 'photo' ? 'https://example.com/audio.mp3' : undefined
+      linkUrl: type === 'link' ? linkUrl : undefined
     });
     
     incrementArtifactsCreated();
@@ -249,8 +189,7 @@ export default function CreateScreen() {
     setDescription('');
     setType('photo');
     setImage(null);
-    setAudioUri(null);
-    setRecordingDuration(0);
+    setLinkUrl('');
     
     // Navigate back to scanner
     router.push('/');
@@ -284,36 +223,19 @@ export default function CreateScreen() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.typeButton, type === 'audio' && styles.selectedType]}
-            onPress={() => setType('audio')}
+            style={[styles.typeButton, type === 'link' && styles.selectedType]}
+            onPress={() => setType('link')}
             activeOpacity={0.7}
           >
-            <Mic 
+            <Link 
               size={24} 
-              color={type === 'audio' ? theme.colors.background : theme.colors.text} 
+              color={type === 'link' ? theme.colors.background : theme.colors.text} 
             />
             <Text style={[
               styles.typeText,
-              type === 'audio' && styles.selectedTypeText
+              type === 'link' && styles.selectedTypeText
             ]}>
-              AUDIO
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.typeButton, type === 'combo' && styles.selectedType]}
-            onPress={() => setType('combo')}
-            activeOpacity={0.7}
-          >
-            <Radio 
-              size={24} 
-              color={type === 'combo' ? theme.colors.background : theme.colors.text} 
-            />
-            <Text style={[
-              styles.typeText,
-              type === 'combo' && styles.selectedTypeText
-            ]}>
-              COMBO
+              LINK
             </Text>
           </TouchableOpacity>
         </View>
@@ -339,8 +261,22 @@ export default function CreateScreen() {
           maxLength={200}
         />
         
+        {/* Link input */}
+        {type === 'link' && (
+          <TextInput
+            style={styles.input}
+            placeholder="Enter URL (https://...)"
+            placeholderTextColor={theme.colors.secondaryText}
+            value={linkUrl}
+            onChangeText={setLinkUrl}
+            keyboardType="url"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        )}
+        
         {/* Media upload */}
-        {(type === 'photo' || type === 'combo') && (
+        {type === 'photo' && (
           <View style={styles.mediaContainer}>
             <Text style={styles.mediaLabel}>PHOTO</Text>
             
@@ -391,46 +327,7 @@ export default function CreateScreen() {
           </View>
         )}
         
-        {/* Audio recording */}
-        {(type === 'audio' || type === 'combo') && (
-          <View style={styles.mediaContainer}>
-            <Text style={styles.mediaLabel}>AUDIO (15s MAX)</Text>
-            
-            {audioUri ? (
-              <View style={styles.audioPreviewContainer}>
-                <View style={styles.audioInfo}>
-                  <Mic size={20} color={theme.colors.accent} />
-                  <Text style={styles.audioText}>Audio recorded</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.recordButton}
-                  onPress={startRecording}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.recordButtonText}>RE-RECORD</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity 
-                style={[
-                  styles.recordButton,
-                  audioRecorderState.isRecording && styles.recordingButton
-                ]}
-                onPress={audioRecorderState.isRecording ? stopRecording : startRecording}
-                activeOpacity={0.7}
-                disabled={!permissionsGranted}
-              >
-                <Mic size={24} color={audioRecorderState.isRecording ? theme.colors.background : theme.colors.text} />
-                <Text style={[
-                  styles.recordButtonText,
-                  audioRecorderState.isRecording && styles.recordingButtonText
-                ]}>
-                  {audioRecorderState.isRecording ? `RECORDING ${formatDuration(recordingDuration)}` : 'RECORD AUDIO'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+
         
         {/* Location */}
         <View style={styles.locationContainer}>
@@ -642,57 +539,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: theme.spacing.sm,
   },
-  recordButton: {
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.18,
-    shadowRadius: 1.0,
-    elevation: 1,
-  },
-  recordingButton: {
-    backgroundColor: theme.colors.accent,
-    borderColor: theme.colors.accent,
-  },
-  recordButtonText: {
-    color: theme.colors.text,
-    marginTop: theme.spacing.sm,
-    fontSize: 14,
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
-  },
-  recordingButtonText: {
-    color: theme.colors.background,
-  },
-  audioPreviewContainer: {
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  audioInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  audioText: {
-    color: theme.colors.text,
-    marginLeft: theme.spacing.sm,
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
-  },
+
   locationContainer: {
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.md,

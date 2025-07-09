@@ -2,7 +2,7 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { theme } from "@/constants/theme";
 import { StatusBar } from "@/components/StatusBar";
-import { Scan, Map, Plus, Archive, User } from "lucide-react-native";
+import { Compass, Plus, Archive, User } from "lucide-react-native";
 
 export default function TabLayout() {
   return (
@@ -22,51 +22,24 @@ export default function TabLayout() {
             fontFamily: 'monospace',
             fontSize: 12,
           },
-          headerStyle: {
-            backgroundColor: theme.colors.background,
-          },
-          headerTitleStyle: {
-            color: theme.colors.text,
-            fontWeight: 'bold',
-            fontSize: 22,
-          },
-          headerShadowVisible: false,
+          headerShown: false,
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
-            title: "SOLANA ECHOES",
-            tabBarLabel: "SCANNER",
-            tabBarIcon: ({ color }) => <Scan size={26} color={color} />,
+            title: "DISCOVER ARTIFACTS",
+            tabBarLabel: "DISCOVER",
+            tabBarIcon: ({ color }) => <Compass size={26} color={color} />,
           }}
         />
-        <Tabs.Screen
-          name="map"
-          options={{
-            title: "ARTIFACT MAP",
-            tabBarLabel: "MAP",
-            tabBarIcon: ({ color }) => <Map size={26} color={color} />,
-          }}
-        />
+
         <Tabs.Screen
           name="create"
           options={{
             title: "CREATE ARTIFACT",
             tabBarLabel: "CREATE",
-            tabBarIcon: ({ color }) => (
-              <Plus
-                size={26}
-                color={theme.colors.background}
-                style={{
-                  backgroundColor: theme.colors.accent,
-                  borderRadius: 22,
-                  padding: 10,
-                  overflow: 'hidden',
-                  marginTop: -20,
-                }}
-              />
-            ),
+            tabBarIcon: ({ color }) => <Plus size={26} color={color} />,
           }}
         />
         <Tabs.Screen

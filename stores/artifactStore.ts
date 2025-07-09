@@ -7,6 +7,7 @@ interface ArtifactState {
   nearbyArtifacts: Artifact[];
   discoveredArtifacts: Artifact[];
   createdArtifacts: Artifact[];
+  donatedArtifacts: string[];
   currentArtifact: Artifact | null;
   isScanning: boolean;
   
@@ -16,6 +17,7 @@ interface ArtifactState {
   discoverArtifact: (artifactId: string) => void;
   setCurrentArtifact: (artifact: Artifact | null) => void;
   preserveArtifact: (artifactId: string, bonkAmount: number) => void;
+  donateToArtifact: (artifactId: string) => void;
   createArtifact: (artifact: Omit<Artifact, 'id' | 'createdAt' | 'brightness' | 'bonkPreservation'>) => void;
 }
 
@@ -25,6 +27,7 @@ export const useArtifactStore = create<ArtifactState>()(
       nearbyArtifacts: artifacts,
       discoveredArtifacts: [],
       createdArtifacts: [],
+      donatedArtifacts: [],
       currentArtifact: null,
       isScanning: false,
       
@@ -58,6 +61,14 @@ export const useArtifactStore = create<ArtifactState>()(
         }));
       },
       
+      donateToArtifact: (artifactId: string) => {
+        set(state => ({
+          donatedArtifacts: state.donatedArtifacts.includes(artifactId) 
+            ? state.donatedArtifacts.filter(id => id !== artifactId)
+            : [...state.donatedArtifacts, artifactId]
+        }));
+      },
+      
       createArtifact: (artifactData) => {
         const newArtifact: Artifact = {
           ...artifactData,
@@ -78,7 +89,8 @@ export const useArtifactStore = create<ArtifactState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         discoveredArtifacts: state.discoveredArtifacts,
-        createdArtifacts: state.createdArtifacts
+        createdArtifacts: state.createdArtifacts,
+        donatedArtifacts: state.donatedArtifacts
       })
     }
   )

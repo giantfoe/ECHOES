@@ -1,6 +1,6 @@
 export interface Artifact {
   id: string;
-  type: 'photo' | 'audio' | 'combo';
+  type: 'photo' | 'link';
   title: string;
   description: string;
   location: {
@@ -14,15 +14,15 @@ export interface Artifact {
     id: string;
     name: string;
   };
-  mediaUrl?: string; // URL to photo if type is photo or combo
-  audioUrl?: string; // URL to audio if type is audio or combo
+  mediaUrl?: string; // URL to photo if type is photo
+  linkUrl?: string; // URL for link type artifacts
   bonkPreservation: number; // Amount of BONK used to preserve
 }
 
 export const artifacts: Artifact[] = [
   {
     id: '1',
-    type: 'combo',
+    type: 'photo',
     title: 'Sunset Memories',
     description: "This view never gets old. I come here every evening to watch the sunset and reflect on the day.",
     location: {
@@ -37,7 +37,6 @@ export const artifacts: Artifact[] = [
       name: 'Alex'
     },
     mediaUrl: 'https://images.unsplash.com/photo-1472120435266-53107fd0c44a?q=80&w=500',
-    audioUrl: 'https://example.com/audio1.mp3',
     bonkPreservation: 250
   },
   {
@@ -61,9 +60,9 @@ export const artifacts: Artifact[] = [
   },
   {
     id: '3',
-    type: 'audio',
-    title: 'City Ambience',
-    description: "The sounds of the city at night are so calming. Listen to this peaceful urban symphony.",
+    type: 'link',
+    title: 'City Soundscape',
+    description: "Check out this amazing collection of urban sounds I found. Perfect for meditation and focus.",
     location: {
       latitude: 34.0535,
       longitude: -118.2450,
@@ -75,12 +74,12 @@ export const artifacts: Artifact[] = [
       id: 'user3',
       name: 'Taylor'
     },
-    audioUrl: 'https://example.com/audio2.mp3',
+    linkUrl: 'https://example.com/city-sounds',
     bonkPreservation: 120
   },
   {
     id: '4',
-    type: 'combo',
+    type: 'photo',
     title: 'Historic Building',
     description: "This building is over 100 years old. If you look closely, you can see the original architectural details.",
     location: {
@@ -95,7 +94,6 @@ export const artifacts: Artifact[] = [
       name: 'Morgan'
     },
     mediaUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=500',
-    audioUrl: 'https://example.com/audio3.mp3',
     bonkPreservation: 300
   },
   {

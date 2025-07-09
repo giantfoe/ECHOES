@@ -1,6 +1,6 @@
 // Component exports
 export { ArtifactCard } from './ArtifactCard';
-export { AudioPlayer } from './AudioPlayer';
 export { BonkSlider } from './BonkSlider';
 export { Scanner } from './Scanner';
+export { DiscoverFeed } from './DiscoverFeed';
 export { StatusBar } from './StatusBar';
