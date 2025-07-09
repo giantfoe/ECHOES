@@ -35,3 +35,27 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 .vercel
+
+# Android
+*.apk
+*.aab
+*.dex
+*.class
+bin/
+gen/
+out/
+.gradle/
+build/
+local.properties
+proguard/
+*.log
+
+# Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Android Virtual Device
+.android/
+Users/
