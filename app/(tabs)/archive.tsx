@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { globalStyles } from '@/constants/theme';
 import { theme } from '@/constants/theme';
 import { useArtifactStore } from '@/stores/artifactStore';
@@ -25,7 +26,7 @@ export default function ArchiveScreen() {
   );
   
   return (
-    <View style={globalStyles.container}>
+    <SafeAreaView style={globalStyles.container} edges={['top', 'left', 'right']}>
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[
@@ -75,7 +76,7 @@ export default function ArchiveScreen() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={renderEmptyState}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     color: theme.colors.secondaryText,
     marginLeft: theme.spacing.sm,
     fontSize: 12,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   activeTabText: {
     color: theme.colors.accent,
@@ -138,12 +139,12 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginTop: theme.spacing.md,
     marginBottom: theme.spacing.sm,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   emptyText: {
     fontSize: 14,
     color: theme.colors.secondaryText,
     textAlign: 'center',
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
 });

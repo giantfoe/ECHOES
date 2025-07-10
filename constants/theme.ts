@@ -3,6 +3,10 @@ import colors from './colors';
 
 export const theme = {
   colors: colors.dark,
+  fonts: {
+    primary: 'Qurova',
+    fallback: 'System',
+  },
   spacing: {
     xs: 6,
     sm: 12,
@@ -65,13 +69,13 @@ export const globalStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   subtitle: {
     fontSize: 18,
     color: theme.colors.secondaryText,
     marginBottom: theme.spacing.md,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   card: {
     backgroundColor: theme.colors.card,
@@ -108,7 +112,7 @@ export const globalStyles = StyleSheet.create({
     color: theme.colors.background,
     fontWeight: 'bold',
     fontSize: 16,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   secondaryButton: {
     backgroundColor: 'transparent',
@@ -123,7 +127,7 @@ export const globalStyles = StyleSheet.create({
     color: theme.colors.accent,
     fontWeight: 'bold',
     fontSize: 16,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   input: {
     backgroundColor: theme.colors.card,
@@ -134,6 +138,6 @@ export const globalStyles = StyleSheet.create({
     borderColor: theme.colors.border,
     marginBottom: theme.spacing.md,
     fontSize: 16,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
 });

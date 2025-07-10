@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { theme } from "@/constants/theme";
 
 export const unstable_settings = {
@@ -28,8 +29,8 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   return (
-    <>
-      <StatusBar style="light" />
+    <SafeAreaProvider>
+      <StatusBar style="light" backgroundColor={theme.colors.background} translucent={false} />
       <Stack
         screenOptions={{
           headerStyle: {
@@ -54,6 +55,6 @@ function RootLayoutNav() {
           }} 
         />
       </Stack>
-    </>
+    </SafeAreaProvider>
   );
 }

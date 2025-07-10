@@ -1,14 +1,11 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { theme } from "@/constants/theme";
-import { StatusBar } from "@/components/StatusBar";
 import { Compass, Plus, Archive, User } from "lucide-react-native";
 
 export default function TabLayout() {
   return (
-    <>
-      <StatusBar />
-      <Tabs
+    <Tabs
         screenOptions={{
           tabBarActiveTintColor: theme.colors.accent,
           tabBarInactiveTintColor: theme.colors.inactive,
@@ -19,7 +16,7 @@ export default function TabLayout() {
             paddingBottom: 10,
           },
           tabBarLabelStyle: {
-            fontFamily: 'monospace',
+            fontFamily: 'Qurova',
             fontSize: 12,
           },
           headerShown: false,
@@ -59,6 +56,5 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-    </>
   );
 }

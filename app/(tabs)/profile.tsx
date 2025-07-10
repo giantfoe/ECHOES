@@ -1,24 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView } from 'react-native';
-import { globalStyles } from '@/constants/theme';
-import { theme } from '@/constants/theme';
-import { useUserStore } from '@/stores/userStore';
-import { Zap, User, Settings, Bell, Eye, Moon } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { User, Zap, Bell, Eye, Moon } from 'lucide-react-native';
+import { useArtifactStore } from '../../stores/artifactStore';
+import { theme, globalStyles } from '../../constants/theme';
+
+type SettingKey = 'notifications' | 'arMode' | 'darkMode';
+
+interface Settings {
+  notifications: boolean;
+  arMode: boolean;
+  darkMode: boolean;
+}
 
 export default function ProfileScreen() {
   const { 
     bonkBalance, 
-    tipsReceived, 
-    tipsSent, 
+    addBonk, 
     artifactsCreated, 
-    artifactsDiscovered,
-    settings,
-    updateSettings,
-    addBonk
-  } = useUserStore();
+    artifactsDiscovered, 
+    tipsReceived, 
+    tipsSent 
+  } = useArtifactStore();
   
-  const handleToggleSetting = (setting: keyof typeof settings) => {
-    updateSettings({ [setting]: !settings[setting] });
+  const [settings, setSettings] = useState<Settings>({
+    notifications: true,
+    arMode: false,
+    darkMode: false,
+  });
+  
+  const handleToggleSetting = (key: SettingKey) => {
+    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
   
   const handleAddFunds = () => {
@@ -27,105 +39,107 @@ export default function ProfileScreen() {
   };
   
   return (
-    <ScrollView style={globalStyles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.container}>
-        {/* User info */}
-        <View style={styles.userContainer}>
-          <View style={styles.avatarContainer}>
-            <User size={48} color={theme.colors.text} />
-          </View>
-          <Text style={styles.username}>DIGITAL ARCHAEOLOGIST</Text>
-          <Text style={styles.userBio}>Preserving digital memories since 2023</Text>
-        </View>
-        
-        {/* BONK balance */}
-        <View style={styles.balanceContainer}>
-          <View style={styles.balanceHeader}>
-            <Zap size={20} color={theme.colors.accent} />
-            <Text style={styles.balanceTitle}>BONK BALANCE</Text>
-          </View>
-          <Text style={styles.balanceAmount}>{bonkBalance}</Text>
-          <TouchableOpacity 
-            style={styles.addFundsButton}
-            onPress={handleAddFunds}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.addFundsText}>ADD FUNDS</Text>
-          </TouchableOpacity>
-        </View>
-        
-        {/* Stats */}
-        <Text style={styles.sectionTitle}>STATISTICS</Text>
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{artifactsCreated}</Text>
-            <Text style={styles.statLabel}>CREATED</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{artifactsDiscovered}</Text>
-            <Text style={styles.statLabel}>DISCOVERED</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{tipsReceived}</Text>
-            <Text style={styles.statLabel}>RECEIVED</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{tipsSent}</Text>
-            <Text style={styles.statLabel}>SENT</Text>
-          </View>
-        </View>
-        
-        {/* Settings */}
-        <Text style={styles.sectionTitle}>SETTINGS</Text>
-        <View style={styles.settingsContainer}>
-          <View style={styles.settingItem}>
-            <View style={styles.settingLabelContainer}>
-              <Bell size={16} color={theme.colors.text} />
-              <Text style={styles.settingLabel}>NOTIFICATIONS</Text>
+    <SafeAreaView style={globalStyles.container} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.container}>
+          {/* User info */}
+          <View style={styles.userContainer}>
+            <View style={styles.avatarContainer}>
+              <User size={48} color={theme.colors.text} />
             </View>
-            <Switch
-              value={settings.notifications}
-              onValueChange={() => handleToggleSetting('notifications')}
-              trackColor={{ false: theme.colors.inactive, true: theme.colors.accent }}
-              thumbColor={theme.colors.text}
-            />
+            <Text style={styles.username}>DIGITAL ARCHAEOLOGIST</Text>
+            <Text style={styles.userBio}>Preserving digital memories since 2023</Text>
           </View>
           
-          <View style={styles.settingItem}>
-            <View style={styles.settingLabelContainer}>
-              <Eye size={16} color={theme.colors.text} />
-              <Text style={styles.settingLabel}>AR MODE</Text>
+          {/* BONK balance */}
+          <View style={styles.balanceContainer}>
+            <View style={styles.balanceHeader}>
+              <Zap size={20} color={theme.colors.accent} />
+              <Text style={styles.balanceTitle}>BONK BALANCE</Text>
             </View>
-            <Switch
-              value={settings.arMode}
-              onValueChange={() => handleToggleSetting('arMode')}
-              trackColor={{ false: theme.colors.inactive, true: theme.colors.accent }}
-              thumbColor={theme.colors.text}
-            />
+            <Text style={styles.balanceAmount}>{bonkBalance}</Text>
+            <TouchableOpacity 
+              style={styles.addFundsButton}
+              onPress={handleAddFunds}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.addFundsText}>ADD FUNDS</Text>
+            </TouchableOpacity>
           </View>
           
-          <View style={styles.settingItem}>
-            <View style={styles.settingLabelContainer}>
-              <Moon size={16} color={theme.colors.text} />
-              <Text style={styles.settingLabel}>DARK MODE</Text>
+          {/* Stats */}
+          <Text style={styles.sectionTitle}>STATISTICS</Text>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{artifactsCreated}</Text>
+              <Text style={styles.statLabel}>CREATED</Text>
             </View>
-            <Switch
-              value={settings.darkMode}
-              onValueChange={() => handleToggleSetting('darkMode')}
-              trackColor={{ false: theme.colors.inactive, true: theme.colors.accent }}
-              thumbColor={theme.colors.text}
-            />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{artifactsDiscovered}</Text>
+              <Text style={styles.statLabel}>DISCOVERED</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{tipsReceived}</Text>
+              <Text style={styles.statLabel}>RECEIVED</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{tipsSent}</Text>
+              <Text style={styles.statLabel}>SENT</Text>
+            </View>
+          </View>
+          
+          {/* Settings */}
+          <Text style={styles.sectionTitle}>SETTINGS</Text>
+          <View style={styles.settingsContainer}>
+            <View style={styles.settingItem}>
+              <View style={styles.settingLabelContainer}>
+                <Bell size={16} color={theme.colors.text} />
+                <Text style={styles.settingLabel}>NOTIFICATIONS</Text>
+              </View>
+              <Switch
+                value={settings.notifications}
+                onValueChange={() => handleToggleSetting('notifications')}
+                trackColor={{ false: theme.colors.inactive, true: theme.colors.accent }}
+                thumbColor={theme.colors.text}
+              />
+            </View>
+            
+            <View style={styles.settingItem}>
+              <View style={styles.settingLabelContainer}>
+                <Eye size={16} color={theme.colors.text} />
+                <Text style={styles.settingLabel}>AR MODE</Text>
+              </View>
+              <Switch
+                value={settings.arMode}
+                onValueChange={() => handleToggleSetting('arMode')}
+                trackColor={{ false: theme.colors.inactive, true: theme.colors.accent }}
+                thumbColor={theme.colors.text}
+              />
+            </View>
+            
+            <View style={styles.settingItem}>
+              <View style={styles.settingLabelContainer}>
+                <Moon size={16} color={theme.colors.text} />
+                <Text style={styles.settingLabel}>DARK MODE</Text>
+              </View>
+              <Switch
+                value={settings.darkMode}
+                onValueChange={() => handleToggleSetting('darkMode')}
+                trackColor={{ false: theme.colors.inactive, true: theme.colors.accent }}
+                thumbColor={theme.colors.text}
+              />
+            </View>
+          </View>
+          
+          {/* App info */}
+          <View style={styles.appInfoContainer}>
+            <Text style={styles.appName}>SOLANA ECHOES</Text>
+            <Text style={styles.appVersion}>VERSION 1.0.0</Text>
+            <Text style={styles.appCopyright}>© 2025 DIGITAL ARCHAEOLOGY COLLECTIVE</Text>
           </View>
         </View>
-        
-        {/* App info */}
-        <View style={styles.appInfoContainer}>
-          <Text style={styles.appName}>SOLANA ECHOES</Text>
-          <Text style={styles.appVersion}>VERSION 1.0.0</Text>
-          <Text style={styles.appCopyright}>© 2025 DIGITAL ARCHAEOLOGY COLLECTIVE</Text>
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -165,13 +179,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   userBio: {
     fontSize: 14,
     color: theme.colors.secondaryText,
     textAlign: 'center',
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   balanceContainer: {
     backgroundColor: theme.colors.card,
@@ -200,14 +214,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.text,
     marginLeft: theme.spacing.sm,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   balanceAmount: {
     fontSize: 36,
     fontWeight: 'bold',
     color: theme.colors.accent,
     marginBottom: theme.spacing.md,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   addFundsButton: {
     backgroundColor: theme.colors.accent,
@@ -227,14 +241,14 @@ const styles = StyleSheet.create({
     color: theme.colors.background,
     fontWeight: 'bold',
     fontSize: 14,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -262,12 +276,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   statLabel: {
     fontSize: 12,
     color: theme.colors.secondaryText,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   settingsContainer: {
     backgroundColor: theme.colors.card,
@@ -300,7 +314,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.text,
     marginLeft: theme.spacing.sm,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   appInfoContainer: {
     alignItems: 'center',
@@ -312,18 +326,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   appVersion: {
     fontSize: 14,
     color: theme.colors.secondaryText,
     marginBottom: theme.spacing.sm,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   appCopyright: {
     fontSize: 12,
     color: theme.colors.secondaryText,
-    textAlign: 'center',
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
 });

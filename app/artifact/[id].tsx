@@ -6,15 +6,15 @@ import { theme } from '@/constants/theme';
 import { useArtifactStore } from '@/stores/artifactStore';
 import { Image } from 'expo-image';
 
-import { BonkSlider } from '@/components/BonkSlider';
-import { MapPin, Calendar, User, ArrowLeft } from 'lucide-react-native';
+import { MapPin, Calendar, User, ArrowLeft, Heart } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 export default function ArtifactDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { nearbyArtifacts, currentArtifact, setCurrentArtifact } = useArtifactStore();
+  const { nearbyArtifacts, currentArtifact, setCurrentArtifact, preserveArtifact } = useArtifactStore();
   const [artifact, setArtifact] = useState(currentArtifact);
+  const [isPreserved, setIsPreserved] = useState(false);
   
   useEffect(() => {
     if (id) {
@@ -59,8 +59,14 @@ export default function ArtifactDetailScreen() {
   };
   
   const handlePreserve = () => {
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newPreservedState = !isPreserved;
+    setIsPreserved(newPreservedState);
+    
+    // When preserving, send 0.1 dollar's worth of BONK
+    if (newPreservedState) {
+      const bonkAmount = 0.1; // $0.1 worth of BONK
+      preserveArtifact(artifact.id, bonkAmount);
     }
   };
   
@@ -83,21 +89,6 @@ export default function ArtifactDetailScreen() {
                 contentFit="cover"
                 transition={300}
               />
-              <View style={styles.brightnessOverlay} />
-              <View style={styles.imageInfo}>
-                <View style={styles.brightnessContainer}>
-                  <Text style={styles.brightnessLabel}>BRIGHTNESS</Text>
-                  <View style={styles.brightnessBar}>
-                    <View 
-                      style={[
-                        styles.brightnessFill, 
-                        { width: `${artifact.brightness}%` }
-                      ]} 
-                    />
-                  </View>
-                  <Text style={styles.brightnessValue}>{artifact.brightness}%</Text>
-                </View>
-              </View>
             </View>
           )}
           
@@ -152,27 +143,22 @@ export default function ArtifactDetailScreen() {
             </View>
           )}
           
-          {/* Preservation */}
-          <BonkSlider 
-            label="Preservation Level"
-            value={artifact.bonkPreservation || 0}
-            onValueChange={handlePreserve}
-            minimumValue={0}
-            maximumValue={1000}
-            step={10}
-          />
-          
-          {/* Preservation stats */}
-          <View style={styles.preservationStats}>
-            <Text style={styles.preservationTitle}>PRESERVATION STATS</Text>
-            <View style={styles.preservationDetails}>
-              <Text style={styles.preservationText}>
-                This artifact has been preserved with {artifact.bonkPreservation} BONK tokens.
+          {/* Preserve Button */}
+          <View style={styles.preserveContainer}>
+            <TouchableOpacity 
+              style={[styles.preserveButton, isPreserved && styles.preserveButtonActive]} 
+              onPress={handlePreserve}
+              activeOpacity={0.7}
+            >
+              <Heart 
+                size={20} 
+                color={isPreserved ? '#FFFFFF' : theme.colors.accent}
+                fill={isPreserved ? '#FFFFFF' : 'transparent'}
+              />
+              <Text style={[styles.preserveText, isPreserved && styles.preserveTextActive]}>
+                {isPreserved ? 'Preserved' : 'Preserve'}
               </Text>
-              <Text style={styles.preservationSubtext}>
-                Higher preservation ensures this memory remains bright for future explorers.
-              </Text>
-            </View>
+            </TouchableOpacity>
           </View>
           
           {/* Back button */}
@@ -182,7 +168,7 @@ export default function ArtifactDetailScreen() {
             activeOpacity={0.7}
           >
             <ArrowLeft size={16} color={theme.colors.accent} />
-            <Text style={styles.backButtonText}>BACK TO SCANNER</Text>
+            <Text style={styles.backButtonText}>BACK TO DISCOVER</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -206,11 +192,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: theme.colors.text,
     marginBottom: theme.spacing.lg,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   imageContainer: {
-    position: 'relative',
-    height: 250,
+    height: 300,
     borderRadius: theme.borderRadius.md,
     overflow: 'hidden',
     marginBottom: theme.spacing.md,
@@ -228,49 +213,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-  },
-  brightnessOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: `${theme.colors.background}20`,
-  },
-  imageInfo: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: theme.spacing.md,
-    backgroundColor: `${theme.colors.background}80`,
-  },
-  brightnessContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  brightnessLabel: {
-    fontSize: 12,
-    color: theme.colors.text,
-    marginRight: theme.spacing.sm,
-    fontFamily: 'monospace',
-  },
-  brightnessBar: {
-    flex: 1,
-    height: 4,
-    backgroundColor: `${theme.colors.border}80`,
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginRight: theme.spacing.sm,
-  },
-  brightnessFill: {
-    height: '100%',
-    backgroundColor: theme.colors.accent,
-  },
-  brightnessValue: {
-    fontSize: 12,
-    color: theme.colors.text,
-    fontFamily: 'monospace',
   },
   detailsContainer: {
     backgroundColor: theme.colors.card,
@@ -293,7 +235,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   metaContainer: {
     marginBottom: theme.spacing.md,
@@ -307,15 +249,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.secondaryText,
     marginLeft: theme.spacing.sm,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   description: {
     fontSize: 16,
     color: theme.colors.text,
     lineHeight: 24,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
-  preservationStats: {
+  preserveContainer: {
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
@@ -330,27 +272,31 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3.84,
     elevation: 5,
+    alignItems: 'center',
   },
-  preservationTitle: {
+  preserveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: theme.colors.accent,
+  },
+  preserveButtonActive: {
+    backgroundColor: theme.colors.accent,
+    borderColor: theme.colors.accent,
+  },
+  preserveText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
-    fontFamily: 'monospace',
-  },
-  preservationDetails: {
+    color: theme.colors.accent,
     marginLeft: theme.spacing.sm,
+    fontFamily: 'Qurova',
+    fontWeight: '600',
   },
-  preservationText: {
-    fontSize: 14,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
-    fontFamily: 'monospace',
-  },
-  preservationSubtext: {
-    fontSize: 12,
-    color: theme.colors.secondaryText,
-    fontFamily: 'monospace',
+  preserveTextActive: {
+    color: '#FFFFFF',
   },
   backButton: {
     flexDirection: 'row',
@@ -376,14 +322,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: theme.spacing.sm,
     fontSize: 14,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   linkLabel: {
     fontSize: 14,
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   linkButton: {
     backgroundColor: theme.colors.accent,
@@ -395,6 +341,6 @@ const styles = StyleSheet.create({
     color: theme.colors.background,
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
 });

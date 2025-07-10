@@ -8,6 +8,7 @@ interface ArtifactState {
   discoveredArtifacts: Artifact[];
   createdArtifacts: Artifact[];
   donatedArtifacts: string[];
+  preservedArtifacts: string[];
   currentArtifact: Artifact | null;
   isScanning: boolean;
   
@@ -28,6 +29,7 @@ export const useArtifactStore = create<ArtifactState>()(
       discoveredArtifacts: [],
       createdArtifacts: [],
       donatedArtifacts: [],
+      preservedArtifacts: [],
       currentArtifact: null,
       isScanning: false,
       
@@ -48,6 +50,9 @@ export const useArtifactStore = create<ArtifactState>()(
       
       preserveArtifact: (artifactId: string, bonkAmount: number) => {
         set(state => ({
+          preservedArtifacts: state.preservedArtifacts.includes(artifactId) 
+            ? state.preservedArtifacts
+            : [...state.preservedArtifacts, artifactId],
           nearbyArtifacts: state.nearbyArtifacts.map(a => 
             a.id === artifactId 
               ? { ...a, bonkPreservation: a.bonkPreservation + bonkAmount, brightness: Math.min(100, a.brightness + bonkAmount / 10) } 
@@ -90,7 +95,8 @@ export const useArtifactStore = create<ArtifactState>()(
       partialize: (state) => ({
         discoveredArtifacts: state.discoveredArtifacts,
         createdArtifacts: state.createdArtifacts,
-        donatedArtifacts: state.donatedArtifacts
+        donatedArtifacts: state.donatedArtifacts,
+        preservedArtifacts: state.preservedArtifacts
       })
     }
   )

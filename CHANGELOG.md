@@ -7,12 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed app layout positioning issues where content appeared too high on phone screens
+- Implemented proper SafeAreaView usage across all tab screens to respect device safe areas
+- Added SafeAreaProvider to root layout for consistent safe area handling
+- Updated StatusBar configuration to prevent content overlap with system UI
+- Replaced custom StatusBar component with proper expo-status-bar implementation
+- Fixed content visibility issues by properly handling top, left, and right safe area edges
+
 ### Changed
+- Simplified ArtifactCard design to focus on visual content with overlay-style information display
+- Increased card height from 200px to 400px to show maximum 1.5 posts on screen for better visual impact
+- Redesigned card layout with image overlay containing essential information: title, description, creator name, decay stage (brightness), and preserve button
+- Added title and description back to cards with smart truncation functionality
+- Implemented "See more"/"See less" toggle for descriptions longer than 80 characters
+- Updated card spacing with larger bottom margins for better visual separation
+- Implemented semi-transparent dark overlay on images for better text readability
+- Enhanced overlay text hierarchy with larger title font and improved opacity for better readability
+- Removed preservation level (brightness percentage) display from artifact cards for cleaner visual design
+- Changed artifact card tap behavior from navigation to details page to Instagram-style full-screen image viewer
+- Added ImageViewer component for displaying artifact images in full-screen modal with overlay information
+- Implemented modal-based image viewing with backdrop tap to close and dedicated close button
 - Removed header titles from tab navigation for cleaner UI experience
 - Updated tab layout to hide page titles in the top navigation bar
 - Removed map screen from navigation as it's no longer needed with the new discover feed approach
 - Restructured navigation from 5 tabs to 4 tabs (Discover, Create, Archive, Profile)
 - Made create tab icon uniform with other icons by removing special styling (background, padding, margin)
+- Enhanced ArtifactCard component by removing separate donate button and combining like/donate functionality into a single "Preserve" button
+- Updated preserve button to automatically send 0.1 dollar's worth of BONK when activated
+- Redesigned preserve button with improved styling, border, and active states
+- Changed preserve button icon from bookmark to heart to better represent the combined like/donate action
+- Refactored card layout to integrate preserve button into the header area alongside stats for better visual balance
+- Moved preserve button from bottom action area to top-right corner with compact styling
+- Added conditional BONK donation indicator that appears below the card when preserved
+- Updated artifactStore to include preservedArtifacts tracking and proper state management
+- Modified DiscoverFeed component to work with new preserve-only interface
+- Removed "DISCOVER ARTIFACTS" header text and "Pull down to refresh" subtitle from DiscoverFeed
+- Removed pull-to-refresh functionality for cleaner interface
 
 ## [1.0.0] - 2024-12-19
 

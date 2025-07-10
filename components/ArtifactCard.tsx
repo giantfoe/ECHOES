@@ -1,98 +1,102 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { router } from 'expo-router';
 import { theme } from '@/constants/theme';
 import { MapPin, Clock, Heart, Bookmark } from 'lucide-react-native';
 import { Artifact } from '@/mocks/artifacts';
+import { ImageViewer } from './ImageViewer';
 import * as Haptics from 'expo-haptics';
 
 interface ArtifactCardProps {
   artifact: Artifact;
-  onDonate?: (artifactId: string) => void;
-  onPreserve?: (artifactId: string) => void;
-  isDonated?: boolean;
+  onPreserve?: (artifactId: string, bonkAmount: number) => void;
+  isPreserved?: boolean;
 }
 
-export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact, onDonate, onPreserve, isDonated = false }) => {
+export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact, onPreserve, isPreserved: initialPreserved = false }) => {
 
-  const [isPreserved, setIsPreserved] = useState(false);
+  const [isPreserved, setIsPreserved] = useState(initialPreserved);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  
+  const maxDescriptionLength = 80;
+  const shouldTruncate = artifact.description.length > maxDescriptionLength;
+  const displayDescription = isDescriptionExpanded || !shouldTruncate 
+    ? artifact.description 
+    : artifact.description.substring(0, maxDescriptionLength) + '...';
 
   const handlePress = () => {
-    router.push(`/artifact/${artifact.id}`);
+    setIsImageViewerVisible(true);
   };
 
-  const handleDonate = () => {
-    onDonate?.(artifact.id);
+  const handleCloseImageViewer = () => {
+    setIsImageViewerVisible(false);
   };
 
   const handlePreserve = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setIsPreserved(!isPreserved);
-    onPreserve?.(artifact.id);
+    const newPreservedState = !isPreserved;
+    setIsPreserved(newPreservedState);
+    
+    // When preserving, send 0.1 dollar's worth of BONK
+    if (newPreservedState) {
+      const bonkAmount = 0.1; // $0.1 worth of BONK
+      onPreserve?.(artifact.id, bonkAmount);
+    }
+  };
+
+  const handleSeeMore = (e: any) => {
+    e.stopPropagation();
+    setIsDescriptionExpanded(!isDescriptionExpanded);
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
-      {artifact.mediaUrl && (
-        <Image source={{ uri: artifact.mediaUrl }} style={styles.image} />
-      )}
-      <View style={styles.content}>
-        <Text style={styles.title}>{artifact.title}</Text>
-        <Text style={styles.description} numberOfLines={2}>{artifact.description}</Text>
+    <>
+      <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
+        {artifact.mediaUrl && (
+          <Image source={{ uri: artifact.mediaUrl }} style={styles.image} />
+        )}
         
-        <View style={styles.metaContainer}>
-          <View style={styles.metaItem}>
-            <MapPin size={12} color={theme.colors.secondaryText} />
-            <Text style={styles.metaText}>{artifact.location.name}</Text>
+        <View style={styles.overlay}>
+          <View style={styles.contentInfo}>
+            <Text style={styles.titleText}>{artifact.title}</Text>
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.descriptionText}>{displayDescription}</Text>
+              {shouldTruncate && (
+                <TouchableOpacity onPress={handleSeeMore} style={styles.seeMoreButton}>
+                  <Text style={styles.seeMoreText}>
+                    {isDescriptionExpanded ? 'See less' : 'See more'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <Text style={styles.posterText}>by {artifact.creator.name}</Text>
           </View>
-          <View style={styles.metaItem}>
-            <Clock size={12} color={theme.colors.secondaryText} />
-            <Text style={styles.metaText}>{new Date(artifact.createdAt).toLocaleDateString()}</Text>
-          </View>
-        </View>
-        
-        <View style={styles.creatorContainer}>
-          <Text style={styles.creatorText}>by {artifact.creator.name}</Text>
-        </View>
-        
-        <View style={styles.typeContainer}>
-          <Text style={styles.typeText}>{artifact.type.toUpperCase()}</Text>
-          <View style={styles.statsContainer}>
-            <Text style={styles.brightnessText}>{artifact.brightness}% BRIGHT</Text>
-            <Text style={styles.preservationText}>{artifact.bonkPreservation} BONK</Text>
-          </View>
-        </View>
-        
-        {/* Action buttons */}
-        <View style={styles.actionContainer}>
-          <TouchableOpacity 
-            style={styles.actionButton} 
-            onPress={handleDonate}
-            activeOpacity={0.7}
-          >
-            <Heart 
-              size={20} 
-              color={isDonated ? '#FF3B30' : theme.colors.secondaryText}
-              fill={isDonated ? '#FF3B30' : 'transparent'}
-            />
-            <Text style={[styles.actionText, isDonated && styles.actionTextActive]}>Donate</Text>
-          </TouchableOpacity>
           
-          <TouchableOpacity 
-            style={styles.actionButton} 
-            onPress={handlePreserve}
-            activeOpacity={0.7}
-          >
-            <Bookmark 
-              size={20} 
-              color={isPreserved ? theme.colors.accent : theme.colors.secondaryText}
-              fill={isPreserved ? theme.colors.accent : 'transparent'}
-            />
-            <Text style={[styles.actionText, isPreserved && styles.actionTextActive]}>Preserve</Text>
-          </TouchableOpacity>
+          <View style={styles.bottomRow}>
+            <TouchableOpacity 
+              style={[styles.preserveButton, isPreserved && styles.preserveButtonActive]} 
+              onPress={handlePreserve}
+              activeOpacity={0.7}
+            >
+              <Heart 
+                size={16} 
+                color={isPreserved ? '#FFFFFF' : theme.colors.accent}
+                fill={isPreserved ? '#FFFFFF' : 'transparent'}
+              />
+              <Text style={[styles.preserveText, isPreserved && styles.preserveTextActive]}>
+                {isPreserved ? 'Preserved' : 'Preserve'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+      
+      <ImageViewer
+        visible={isImageViewerVisible}
+        artifact={artifact}
+        onClose={handleCloseImageViewer}
+      />
+    </>
   );
 };
 
@@ -100,7 +104,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
     borderWidth: 1,
     borderColor: theme.colors.border,
     overflow: 'hidden',
@@ -112,28 +116,75 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
+    position: 'relative',
   },
   image: {
     width: '100%',
-    height: 120,
+    height: 400,
     backgroundColor: theme.colors.border,
   },
-  content: {
+  overlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     padding: theme.spacing.md,
+  },
+  contentInfo: {
+    marginBottom: theme.spacing.sm,
+  },
+  titleText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: theme.spacing.xs,
+    fontFamily: 'Qurova',
+  },
+  descriptionContainer: {
+    marginBottom: theme.spacing.xs,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    lineHeight: 20,
+    fontFamily: 'Qurova',
+    opacity: 0.9,
+  },
+  seeMoreButton: {
+    marginTop: theme.spacing.xs,
+  },
+  seeMoreText: {
+    fontSize: 12,
+    color: theme.colors.accent,
+    fontWeight: '600',
+    fontFamily: 'Qurova',
+  },
+  posterText: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontStyle: 'italic',
+    fontFamily: 'Qurova',
+    opacity: 0.8,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   description: {
     fontSize: 14,
     color: theme.colors.secondaryText,
     marginBottom: theme.spacing.md,
     lineHeight: 20,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   metaContainer: {
     marginBottom: theme.spacing.sm,
@@ -147,7 +198,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.secondaryText,
     marginLeft: theme.spacing.xs,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   creatorContainer: {
     marginBottom: theme.spacing.sm,
@@ -156,18 +207,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.accent,
     fontStyle: 'italic',
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   typeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginBottom: theme.spacing.sm,
+  },
+  leftInfo: {
+    flex: 1,
   },
   typeText: {
     fontSize: 12,
     fontWeight: 'bold',
     color: theme.colors.accent,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -176,40 +231,50 @@ const styles = StyleSheet.create({
   brightnessText: {
     fontSize: 12,
     color: theme.colors.secondaryText,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   preservationText: {
     fontSize: 12,
     color: theme.colors.accent,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
-  actionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  actionButton: {
+  preserveButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.sm,
     backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: theme.colors.accent,
   },
-  actionText: {
-    fontSize: 14,
-    color: theme.colors.secondaryText,
-    marginLeft: theme.spacing.xs,
-    fontFamily: 'monospace',
-    fontWeight: '500',
+  preserveButtonActive: {
+    backgroundColor: theme.colors.accent,
+    borderColor: theme.colors.accent,
   },
-  actionTextActive: {
+  preserveText: {
+    fontSize: 12,
     color: theme.colors.accent,
+    marginLeft: theme.spacing.xs,
+    fontFamily: 'Qurova',
     fontWeight: '600',
+  },
+  preserveTextActive: {
+    color: '#FFFFFF',
+  },
+  bonkIndicator: {
+    backgroundColor: theme.colors.accent + '20',
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
+    alignSelf: 'flex-start',
+    marginTop: theme.spacing.xs,
+  },
+  bonkIndicatorText: {
+    fontSize: 11,
+    color: theme.colors.accent,
+    fontFamily: 'Qurova',
+    fontWeight: '500',
   },
 });
 

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { DiscoverFeed } from '@/components/DiscoverFeed';
 import { useArtifactStore } from '@/stores/artifactStore';
@@ -21,11 +22,9 @@ export default function DiscoverScreen() {
   };
   
   return (
-    <View style={globalStyles.container}>
-      <SafeAreaView style={styles.container}>
-        <DiscoverFeed onArtifactPress={handleArtifactPress} />
-      </SafeAreaView>
-    </View>
+    <SafeAreaView style={[globalStyles.container, styles.container]} edges={['top', 'left', 'right']}>
+      <DiscoverFeed onArtifactPress={handleArtifactPress} />
+    </SafeAreaView>
   );
 }
 

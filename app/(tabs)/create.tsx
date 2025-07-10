@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { globalStyles } from '@/constants/theme';
 import { theme } from '@/constants/theme';
 import { useArtifactStore } from '@/stores/artifactStore';
@@ -196,8 +197,9 @@ export default function CreateScreen() {
   };
   
   return (
-    <ScrollView style={globalStyles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.container}>
+    <SafeAreaView style={globalStyles.container} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.container}>
         <Text style={styles.sectionTitle}>CREATE NEW ARTIFACT</Text>
         <Text style={styles.sectionSubtitle}>
           Leave a digital memory at your current location
@@ -361,8 +363,9 @@ export default function CreateScreen() {
         <Text style={styles.disclaimer}>
           Artifacts are permanently tied to this location and cannot be moved or deleted.
         </Text>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -379,13 +382,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   sectionSubtitle: {
     fontSize: 14,
     color: theme.colors.secondaryText,
     marginBottom: theme.spacing.lg,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   typeContainer: {
     flexDirection: 'row',
@@ -426,7 +429,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginTop: theme.spacing.xs,
     fontSize: 12,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   selectedTypeText: {
     color: theme.colors.background,
@@ -440,7 +443,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
     fontSize: 16,
     shadowColor: "#000",
     shadowOffset: {
@@ -462,7 +465,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.secondaryText,
     marginBottom: theme.spacing.sm,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
     fontWeight: 'bold',
   },
   uploadButton: {
@@ -487,7 +490,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginTop: theme.spacing.sm,
     fontSize: 14,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
     fontWeight: 'bold',
   },
   imagePreviewContainer: {
@@ -532,7 +535,7 @@ const styles = StyleSheet.create({
   imageActionText: {
     color: theme.colors.accent,
     fontSize: 12,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
     fontWeight: 'bold',
   },
   photoButtonsContainer: {
@@ -566,7 +569,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginLeft: theme.spacing.sm,
     fontWeight: 'bold',
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   locationDetails: {
     marginLeft: theme.spacing.md,
@@ -575,12 +578,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.secondaryText,
     marginBottom: 4,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   locationName: {
     fontSize: 14,
     color: theme.colors.text,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   createButton: {
     backgroundColor: theme.colors.accent,
@@ -606,13 +609,13 @@ const styles = StyleSheet.create({
     color: theme.colors.background,
     fontWeight: 'bold',
     fontSize: 16,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
   disclaimer: {
     fontSize: 12,
     color: theme.colors.secondaryText,
     textAlign: 'center',
     marginTop: theme.spacing.md,
-    fontFamily: 'monospace',
+    fontFamily: 'Qurova',
   },
 });
