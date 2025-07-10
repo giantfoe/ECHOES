@@ -20,6 +20,32 @@ export const theme = {
     lg: 24,
     xl: 32,
   },
+  gradients: {
+    aurora: {
+      colors: ['#E6C88F', '#8F9BE6'],
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 },
+    },
+    twilight: {
+      colors: ['#8F9BE6', '#E6C88F'],
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 0 },
+    },
+  },
+  glassmorphism: {
+    light: {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    medium: {
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    strong: {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      borderColor: 'rgba(255, 255, 255, 0.4)',
+    },
+  },
   shadow: {
     sm: {
       shadowColor: "#000",

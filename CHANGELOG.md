@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated StatusBar configuration to prevent content overlap with system UI
 - Replaced custom StatusBar component with proper expo-status-bar implementation
 - Fixed content visibility issues by properly handling top, left, and right safe area edges
+- Fixed TypeError in GlassCard component by adding missing glassmorphism theme configuration
+- Resolved VirtualizedList nesting warning by removing ScrollView wrapper and using FlatList ListHeaderComponent
+- Fixed theme object structure by adding gradients and glassmorphism properties
+- Updated StoriesCarousel to use theme spacing values instead of hardcoded numbers
+- Fixed GlassCard component to handle undefined props gracefully
+- Fixed stories not loading by implementing proper storage initialization and mock data
 
 ### Changed
 - Simplified ArtifactCard design to focus on visual content with overlay-style information display

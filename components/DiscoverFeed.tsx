@@ -8,9 +8,10 @@ import * as Haptics from 'expo-haptics';
 
 interface DiscoverFeedProps {
   onArtifactPress?: (artifact: Artifact) => void;
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
-export const DiscoverFeed: React.FC<DiscoverFeedProps> = ({ onArtifactPress }) => {
+export const DiscoverFeed: React.FC<DiscoverFeedProps> = ({ onArtifactPress, ListHeaderComponent }) => {
   const { nearbyArtifacts, preservedArtifacts, preserveArtifact } = useArtifactStore();
 
   const handlePreserve = useCallback((artifactId: string, bonkAmount: number) => {
@@ -23,8 +24,9 @@ export const DiscoverFeed: React.FC<DiscoverFeedProps> = ({ onArtifactPress }) =
       artifact={item}
       onPreserve={handlePreserve}
       isPreserved={preservedArtifacts.includes(item.id)}
+      onPress={onArtifactPress ? () => onArtifactPress(item) : undefined}
     />
-  ), [handlePreserve, preservedArtifacts]);
+  ), [handlePreserve, preservedArtifacts, onArtifactPress]);
 
 
 
@@ -43,6 +45,7 @@ export const DiscoverFeed: React.FC<DiscoverFeedProps> = ({ onArtifactPress }) =
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmpty}
+        ListHeaderComponent={ListHeaderComponent}
         initialNumToRender={5}
         maxToRenderPerBatch={10}
         windowSize={10}

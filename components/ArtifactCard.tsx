@@ -10,9 +10,10 @@ interface ArtifactCardProps {
   artifact: Artifact;
   onPreserve?: (artifactId: string, bonkAmount: number) => void;
   isPreserved?: boolean;
+  onPress?: () => void;
 }
 
-export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact, onPreserve, isPreserved: initialPreserved = false }) => {
+export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact, onPreserve, isPreserved: initialPreserved = false, onPress }) => {
 
   const [isPreserved, setIsPreserved] = useState(initialPreserved);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -25,7 +26,11 @@ export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact, onPreserve
     : artifact.description.substring(0, maxDescriptionLength) + '...';
 
   const handlePress = () => {
-    setIsImageViewerVisible(true);
+    if (onPress) {
+      onPress();
+    } else {
+      setIsImageViewerVisible(true);
+    }
   };
 
   const handleCloseImageViewer = () => {
