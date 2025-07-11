@@ -6,13 +6,14 @@ import { theme } from '@/constants/theme';
 import { useArtifactStore } from '@/stores/artifactStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRouter } from 'expo-router';
-import { Camera, Link, Image as ImageIcon, MapPin } from 'lucide-react-native';
+import { Camera, Link, Image as ImageIcon, MapPin, BookOpen } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 // Audio functionality removed for simplicity
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { Image } from 'expo-image';
+import { StoryCreator } from '@/components/Stories';
 
 export default function CreateScreen() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function CreateScreen() {
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState<'photo' | 'link'>('photo');
+  const [type, setType] = useState<'photo' | 'link' | 'story'>('photo');
   const [image, setImage] = useState<string | null>(null);
   const [linkUrl, setLinkUrl] = useState('');
   const [location, setLocation] = useState({
@@ -50,6 +51,8 @@ export default function CreateScreen() {
     name: 'Current Location'
   });
   const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [storyCreatorVisible, setStoryCreatorVisible] = useState(false);
+  const [selectedArtifactForStory, setSelectedArtifactForStory] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeScreen = async () => {
@@ -158,7 +161,41 @@ export default function CreateScreen() {
 
   // Audio recording functions removed for simplicity
   
+  const handleCreateStory = () => {
+    if (!image) {
+      Alert.alert('Error', 'Please select an image for your story');
+      return;
+    }
+    
+    // Create a temporary artifact ID for the story
+    const tempArtifactId = `temp_${Date.now()}`;
+    setSelectedArtifactForStory(tempArtifactId);
+    setStoryCreatorVisible(true);
+  };
+  
+  const handleStoryCreated = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    
+    // Reset form
+    setTitle('');
+    setDescription('');
+    setType('photo');
+    setImage(null);
+    setStoryCreatorVisible(false);
+    setSelectedArtifactForStory(null);
+    
+    // Navigate back to discover
+    router.push('/');
+  };
+
   const handleCreateArtifact = () => {
+    if (type === 'story') {
+      handleCreateStory();
+      return;
+    }
+    
     if (!title || !description) {
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -200,9 +237,9 @@ export default function CreateScreen() {
     <SafeAreaView style={globalStyles.container} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.container}>
-        <Text style={styles.sectionTitle}>CREATE NEW ARTIFACT</Text>
+        <Text style={styles.sectionTitle}>{type === 'story' ? 'CREATE NEW STORY' : 'CREATE NEW ARTIFACT'}</Text>
         <Text style={styles.sectionSubtitle}>
-          Leave a digital memory at your current location
+          {type === 'story' ? 'Share a moment with your followers' : 'Leave a digital memory at your current location'}
         </Text>
         
         {/* Type selection */}
@@ -213,7 +250,7 @@ export default function CreateScreen() {
             activeOpacity={0.7}
           >
             <Camera 
-              size={24} 
+              size={20} 
               color={type === 'photo' ? theme.colors.background : theme.colors.text} 
             />
             <Text style={[
@@ -230,7 +267,7 @@ export default function CreateScreen() {
             activeOpacity={0.7}
           >
             <Link 
-              size={24} 
+              size={20} 
               color={type === 'link' ? theme.colors.background : theme.colors.text} 
             />
             <Text style={[
@@ -240,28 +277,49 @@ export default function CreateScreen() {
               LINK
             </Text>
           </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.typeButton, type === 'story' && styles.selectedType]}
+            onPress={() => setType('story')}
+            activeOpacity={0.7}
+          >
+            <BookOpen 
+              size={20} 
+              color={type === 'story' ? theme.colors.background : theme.colors.text} 
+            />
+            <Text style={[
+              styles.typeText,
+              type === 'story' && styles.selectedTypeText
+            ]}>
+              STORY
+            </Text>
+          </TouchableOpacity>
         </View>
         
-        {/* Title and description */}
-        <TextInput
-          style={styles.input}
-          placeholder="Artifact Title"
-          placeholderTextColor={theme.colors.secondaryText}
-          value={title}
-          onChangeText={setTitle}
-          maxLength={50}
-        />
-        
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          placeholder="Describe this moment..."
-          placeholderTextColor={theme.colors.secondaryText}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={4}
-          maxLength={200}
-        />
+        {/* Title and description - only for artifacts */}
+        {type !== 'story' && (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="Artifact Title"
+              placeholderTextColor={theme.colors.secondaryText}
+              value={title}
+              onChangeText={setTitle}
+              maxLength={50}
+            />
+            
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Describe this moment..."
+              placeholderTextColor={theme.colors.secondaryText}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+              maxLength={200}
+            />
+          </>
+        )}
         
         {/* Link input */}
         {type === 'link' && (
@@ -278,9 +336,9 @@ export default function CreateScreen() {
         )}
         
         {/* Media upload */}
-        {type === 'photo' && (
+        {(type === 'photo' || type === 'story') && (
           <View style={styles.mediaContainer}>
-            <Text style={styles.mediaLabel}>PHOTO</Text>
+            <Text style={styles.mediaLabel}>{type === 'story' ? 'STORY IMAGE' : 'PHOTO'}</Text>
             
             {image ? (
               <View style={styles.imagePreviewContainer}>
@@ -331,40 +389,58 @@ export default function CreateScreen() {
         
 
         
-        {/* Location */}
-        <View style={styles.locationContainer}>
-          <View style={styles.locationHeader}>
-            <MapPin size={16} color={theme.colors.accent} />
-            <Text style={styles.locationTitle}>CURRENT LOCATION</Text>
+        {/* Location - only for artifacts */}
+        {type !== 'story' && (
+          <View style={styles.locationContainer}>
+            <View style={styles.locationHeader}>
+              <MapPin size={16} color={theme.colors.accent} />
+              <Text style={styles.locationTitle}>CURRENT LOCATION</Text>
+            </View>
+            <View style={styles.locationDetails}>
+              <Text style={styles.locationText}>
+                LAT: {location.latitude.toFixed(4)}° • LONG: {location.longitude.toFixed(4)}°
+              </Text>
+              <Text style={styles.locationName}>{location.name}</Text>
+            </View>
           </View>
-          <View style={styles.locationDetails}>
-            <Text style={styles.locationText}>
-              LAT: {location.latitude.toFixed(4)}° • LONG: {location.longitude.toFixed(4)}°
-            </Text>
-            <Text style={styles.locationName}>{location.name}</Text>
-          </View>
-        </View>
+        )}
         
         {/* Create button */}
         <TouchableOpacity 
           style={[
             styles.createButton,
-            (!title || !description) && styles.disabledButton
+            (type === 'story' ? !image : (!title || !description)) && styles.disabledButton
           ]}
           onPress={handleCreateArtifact}
-          disabled={!title || !description}
+          disabled={type === 'story' ? !image : (!title || !description)}
           activeOpacity={0.7}
         >
           <Text style={styles.createButtonText}>
-            CREATE ARTIFACT
+            {type === 'story' ? 'CREATE STORY' : 'CREATE ARTIFACT'}
           </Text>
         </TouchableOpacity>
         
-        <Text style={styles.disclaimer}>
-          Artifacts are permanently tied to this location and cannot be moved or deleted.
-        </Text>
+        {type !== 'story' && (
+          <Text style={styles.disclaimer}>
+            Artifacts are permanently tied to this location and cannot be moved or deleted.
+          </Text>
+        )}
         </View>
       </ScrollView>
+      
+      {/* Story Creator Modal */}
+      {storyCreatorVisible && selectedArtifactForStory && image && (
+        <StoryCreator
+          visible={storyCreatorVisible}
+          artifactId={selectedArtifactForStory}
+          imageUri={image}
+          onClose={() => {
+            setStoryCreatorVisible(false);
+            setSelectedArtifactForStory(null);
+          }}
+          onStoryCreated={handleStoryCreated}
+        />
+      )}
     </SafeAreaView>
   );
 }

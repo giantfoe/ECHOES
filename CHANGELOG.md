@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added story creation functionality to the Create tab
+- Users can now create stories by selecting the "STORY" type and uploading an image
+- Integrated StoryCreator component with the main create interface
+- Added conditional UI that adapts based on creation type (artifact vs story)
+- Added keyboard handling in StoryCreator with KeyboardAvoidingView and dismiss button
+- Text inputs now remain visible above the keyboard when typing
+
 ### Fixed
+- Fixed PanGestureHandler import in StoryCreator component
+- Fixed missing sunset gradient in theme configuration
 - Fixed app layout positioning issues where content appeared too high on phone screens
 - Implemented proper SafeAreaView usage across all tab screens to respect device safe areas
 - Added SafeAreaProvider to root layout for consistent safe area handling
@@ -20,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated StoriesCarousel to use theme spacing values instead of hardcoded numbers
 - Fixed GlassCard component to handle undefined props gracefully
 - Fixed stories not loading by implementing proper storage initialization and mock data
+- Fixed React warning about duplicate keys in StoryCreator color picker by using index-based keys instead of color values
 
 ### Changed
 - Simplified ArtifactCard design to focus on visual content with overlay-style information display

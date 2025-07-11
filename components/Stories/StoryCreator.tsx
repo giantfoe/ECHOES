@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Modal,
@@ -10,9 +10,12 @@ import {
   SafeAreaView,
   Alert,
   Dimensions,
-  PanGestureHandler,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
+import { PanGestureHandler } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StoryCreationData } from '../../types/Story';
@@ -44,9 +47,28 @@ export const StoryCreator: React.FC<StoryCreatorProps> = ({
   const [overlayColor, setOverlayColor] = useState('#FFFFFF');
   const [isCreating, setIsCreating] = useState(false);
   const [showTextInput, setShowTextInput] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   
   const overlayPan = useRef(new Animated.ValueXY()).current;
   const { createStory } = useStoryStore();
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener?.remove();
+      keyboardDidHideListener?.remove();
+    };
+  }, []);
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
 
   const overlayColors = [
     '#FFFFFF',
@@ -129,7 +151,11 @@ export const StoryCreator: React.FC<StoryCreatorProps> = ({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
+      >
         {/* Background Image */}
         <Image
           source={{ uri: imageUri }}
@@ -198,97 +224,115 @@ export const StoryCreator: React.FC<StoryCreatorProps> = ({
         )}
         
         {/* Bottom Controls */}
-        <SafeAreaView style={styles.bottomControls}>
-          {/* Text Input Modal */}
-          {showTextInput && (
-            <GlassCard style={styles.textInputCard}>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Add text to your story..."
-                placeholderTextColor={theme.colors.secondaryText}
-                value={textOverlay}
-                onChangeText={setTextOverlay}
-                multiline
-                autoFocus
-              />
-              
-              {/* Color Picker */}
-              <View style={styles.colorPicker}>
-                <Text style={styles.colorPickerLabel}>Text Color:</Text>
-                <View style={styles.colorOptions}>
-                  {overlayColors.map((color) => (
-                    <TouchableOpacity
-                      key={color}
-                      style={[
-                        styles.colorOption,
-                        { backgroundColor: color },
-                        overlayColor === color && styles.selectedColor,
-                      ]}
-                      onPress={() => setOverlayColor(color)}
-                    />
-                  ))}
+        <View style={styles.bottomControlsContainer}>
+          <SafeAreaView style={styles.bottomControls}>
+            {/* Text Input Modal */}
+            {showTextInput && (
+              <GlassCard style={styles.textInputCard}>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Add text to your story..."
+                  placeholderTextColor={theme.colors.secondaryText}
+                  value={textOverlay}
+                  onChangeText={setTextOverlay}
+                  multiline
+                  autoFocus
+                />
+                
+                {/* Color Picker */}
+                <View style={styles.colorPicker}>
+                  <Text style={styles.colorPickerLabel}>Text Color:</Text>
+                  <View style={styles.colorOptions}>
+                    {overlayColors.map((color, index) => (
+                      <TouchableOpacity
+                        key={`color-${index}`}
+                        style={[
+                          styles.colorOption,
+                          { backgroundColor: color },
+                          overlayColor === color && styles.selectedColor,
+                        ]}
+                        onPress={() => setOverlayColor(color)}
+                      />
+                    ))}
+                  </View>
                 </View>
-              </View>
-              
-              <View style={styles.textInputActions}>
+                
+                <View style={styles.textInputActions}>
+                  <TouchableOpacity
+                    onPress={() => setShowTextInput(false)}
+                    style={styles.textInputButton}
+                  >
+                    <Text style={styles.textInputButtonText}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+              </GlassCard>
+            )}
+            
+            {/* Action Buttons */}
+            {!showTextInput && (
+              <View style={styles.actionButtons}>
                 <TouchableOpacity
-                  onPress={() => setShowTextInput(false)}
-                  style={styles.textInputButton}
+                  onPress={() => setShowTextInput(true)}
+                  style={styles.actionButton}
                 >
-                  <Text style={styles.textInputButtonText}>Done</Text>
+                  <Ionicons name="text" size={24} color={theme.colors.text} />
+                  <Text style={styles.actionButtonText}>Add Text</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.actionButton}>
+                  <Ionicons name="location" size={24} color={theme.colors.text} />
+                  <Text style={styles.actionButtonText}>Location</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.actionButton}>
+                  <Ionicons name="musical-notes" size={24} color={theme.colors.text} />
+                  <Text style={styles.actionButtonText}>Music</Text>
                 </TouchableOpacity>
               </View>
-            </GlassCard>
-          )}
-          
-          {/* Story Details */}
-          {!showTextInput && (
-            <GlassCard style={styles.detailsCard}>
-              <TextInput
-                style={styles.titleInput}
-                placeholder="Story title (optional)"
-                placeholderTextColor={theme.colors.secondaryText}
-                value={title}
-                onChangeText={setTitle}
-                maxLength={50}
-              />
-              
-              <TextInput
-                style={styles.descriptionInput}
-                placeholder="Add a description (optional)"
-                placeholderTextColor={theme.colors.secondaryText}
-                value={description}
-                onChangeText={setDescription}
-                multiline
-                maxLength={200}
-              />
-            </GlassCard>
-          )}
-          
-          {/* Action Buttons */}
-          {!showTextInput && (
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                onPress={() => setShowTextInput(true)}
-                style={styles.actionButton}
-              >
-                <Ionicons name="text" size={24} color={theme.colors.text} />
-                <Text style={styles.actionButtonText}>Add Text</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.actionButton}>
-                <Ionicons name="location" size={24} color={theme.colors.text} />
-                <Text style={styles.actionButtonText}>Location</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.actionButton}>
-                <Ionicons name="musical-notes" size={24} color={theme.colors.text} />
-                <Text style={styles.actionButtonText}>Music</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </SafeAreaView>
-      </View>
+            )}
+          </SafeAreaView>
+        </View>
+        
+        {/* Story Details - Positioned like Instagram */}
+        {!showTextInput && (
+          <View style={styles.storyDetailsContainer}>
+            <SafeAreaView style={styles.storyDetailsContent}>
+              <GlassCard style={styles.compactDetailsCard}>
+                <TextInput
+                  style={styles.compactTitleInput}
+                  placeholder="Story title (optional)"
+                  placeholderTextColor={theme.colors.secondaryText}
+                  value={title}
+                  onChangeText={setTitle}
+                  maxLength={50}
+                />
+                
+                <TextInput
+                  style={styles.compactDescriptionInput}
+                  placeholder="Add a description..."
+                  placeholderTextColor={theme.colors.secondaryText}
+                  value={description}
+                  onChangeText={setDescription}
+                  multiline
+                  maxLength={200}
+                  numberOfLines={2}
+                />
+              </GlassCard>
+            </SafeAreaView>
+          </View>
+        )}
+        
+        {/* Keyboard Dismiss Button */}
+        {keyboardVisible && (
+          <TouchableOpacity
+            style={styles.keyboardDismissButton}
+            onPress={dismissKeyboard}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-down" size={20} color={theme.colors.text} />
+          </TouchableOpacity>
+        )}
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -348,13 +392,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  bottomControls: {
+  bottomControlsContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+  },
+  bottomControls: {
     paddingBottom: 40,
     paddingHorizontal: 16,
+  },
+  storyDetailsContainer: {
+    position: 'absolute',
+    bottom: 120,
+    left: 0,
+    right: 0,
+  },
+  storyDetailsContent: {
+    paddingHorizontal: 16,
+  },
+  compactDetailsCard: {
+    padding: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  compactTitleInput: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.text,
+    marginBottom: 6,
+    paddingVertical: 4,
+  },
+  compactDescriptionInput: {
+    fontSize: 12,
+    color: theme.colors.text,
+    paddingVertical: 4,
+    maxHeight: 40,
   },
   textInputCard: {
     padding: 16,
@@ -405,24 +477,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontWeight: '600',
   },
-  detailsCard: {
-    padding: 16,
-    marginBottom: 16,
-  },
-  titleInput: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginBottom: 12,
-    paddingVertical: 8,
-  },
-  descriptionInput: {
-    fontSize: 14,
-    color: theme.colors.text,
-    minHeight: 60,
-    textAlignVertical: 'top',
-    paddingVertical: 8,
-  },
+
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -436,5 +491,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.secondaryText,
     marginTop: 4,
+  },
+  keyboardDismissButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
 });

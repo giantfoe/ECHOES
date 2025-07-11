@@ -31,6 +31,11 @@ export const theme = {
       start: { x: 0, y: 0 },
       end: { x: 1, y: 0 },
     },
+    sunset: {
+      colors: ['#FF6B6B', '#FFA726'],
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 },
+    },
   },
   glassmorphism: {
     light: {
